@@ -127,6 +127,40 @@ thing to get right is `EXPO_PUBLIC_API_URL`, since `localhost` resolves
 differently depending on whether you're running in an iOS simulator, an
 Android emulator, or on a physical device.
 
+## Deploying the backend to Render
+
+The backend already runs on gunicorn locally (`backend/requirements.txt`
+includes it), and there's a `render.yaml` Blueprint at the repo root that
+Render auto-detects.
+
+1. **Get a Redis instance.** Local dev uses `redis-server` on your machine,
+   which obviously isn't reachable from Render. Either add a Render "Key
+   Value" service (New → Key Value in the dashboard) or use a free
+   [Upstash](https://upstash.com) Redis — either way you'll get a
+   connection string for `REDIS_URL`. Postgres needs no equivalent step
+   here since this project already defaults to a managed instance (Neon).
+2. **New → Blueprint** in the Render dashboard, pointing at this repo.
+   Render reads `render.yaml` and creates a web service named
+   `snip-backend` with `rootDir: backend`, `pip install -r
+   requirements.txt` as the build command, and `gunicorn -w 2 -b
+   0.0.0.0:$PORT run:app` as the start command.
+3. Render will prompt for the env vars marked `sync: false` in
+   `render.yaml` — fill in `DATABASE_URL` (your Neon connection string),
+   `REDIS_URL` (from step 1), and `CORS_ORIGINS` (leave this for step 4).
+   `SECRET_KEY` is auto-generated; don't reuse your local dev value.
+4. Once deployed, Render gives you a URL like
+   `https://snip-backend.onrender.com`. Go back into the service's
+   environment settings and set `BASE_URL` to that URL (it's used to
+   compose the `short_url` field the API returns), and `CORS_ORIGINS` to
+   whatever origin your deployed frontend runs on (e.g. a Vercel domain).
+   Mobile requests aren't subject to CORS, so nothing to add there.
+5. Point the frontend and mobile app at the new backend:
+   `NEXT_PUBLIC_API_URL` / `EXPO_PUBLIC_API_URL` = your Render URL.
+
+The free Render plan spins the service down after inactivity and takes a
+few seconds to wake back up on the next request — expect a slow first
+redirect/API call after idle periods, not a broken deploy.
+
 ## Environment variables
 
 **`backend/.env`** (see `backend/.env.example`)
