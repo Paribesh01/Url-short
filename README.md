@@ -14,6 +14,7 @@ time-series-style analytics queries on top of Postgres.
 ```
 urlShort/
 ├── frontend/          Next.js app (landing page + dashboard)
+├── mobile/            Expo / React Native app (same API, on iOS/Android/web)
 ├── backend/           Flask API (shortening, redirects, analytics)
 └── docker-compose.yml Local Redis (and optional local Postgres)
 ```
@@ -117,6 +118,15 @@ The app starts on `http://localhost:3000`.
 - `/dashboard/<code>` — per-link analytics: clicks over time, top
   referrers/countries/browsers/devices, recent click activity
 
+## 4. Mobile setup (optional)
+
+The same product also has a React Native client in `mobile/`, built with
+Expo — same login/dashboard/analytics/QR features, native on iOS and
+Android. See [`mobile/README.md`](mobile/README.md) for setup; the one
+thing to get right is `EXPO_PUBLIC_API_URL`, since `localhost` resolves
+differently depending on whether you're running in an iOS simulator, an
+Android emulator, or on a physical device.
+
 ## Environment variables
 
 **`backend/.env`** (see `backend/.env.example`)
@@ -127,7 +137,7 @@ The app starts on `http://localhost:3000`.
 | `REDIS_URL` | Redis connection string |
 | `BASE_URL` | Used to compose the full short link returned by the API |
 | `SECRET_KEY` | Flask secret key; also signs auth JWTs |
-| `CORS_ORIGINS` | Comma-separated origins allowed to call the API |
+| `CORS_ORIGINS` | Comma-separated origins allowed to call the API — add `http://localhost:8081` if you're testing the mobile app's web target |
 
 **`frontend/.env.local`** (see `frontend/.env.example`)
 
