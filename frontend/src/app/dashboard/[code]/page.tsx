@@ -5,18 +5,20 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Copy, ExternalLink } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
+import { RequireAuth } from "@/components/require-auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ClicksChart } from "@/components/dashboard/clicks-chart";
 import { RankedList } from "@/components/dashboard/ranked-list";
 import { RecentClicksTable } from "@/components/dashboard/recent-clicks-table";
+import { QrCodeDialog } from "@/components/dashboard/qr-code-dialog";
 import { getUrlAnalytics, ApiError } from "@/lib/api";
 import { formatExactNumber } from "@/lib/format";
 import type { UrlAnalytics } from "@/types";
 import { toast } from "sonner";
 
-export default function LinkAnalyticsPage() {
+function LinkAnalyticsContent() {
   const params = useParams<{ code: string }>();
   const shortCode = params.code;
 
@@ -112,6 +114,7 @@ export default function LinkAnalyticsPage() {
                   <Copy className="size-3.5" />
                   Copy
                 </Button>
+                <QrCodeDialog url={shortUrl} />
               </div>
             </div>
 
@@ -177,5 +180,13 @@ export default function LinkAnalyticsPage() {
         )}
       </main>
     </div>
+  );
+}
+
+export default function LinkAnalyticsPage() {
+  return (
+    <RequireAuth>
+      <LinkAnalyticsContent />
+    </RequireAuth>
   );
 }

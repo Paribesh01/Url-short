@@ -6,7 +6,19 @@ export interface ShortUrl {
   title: string | null;
   created_at: string;
   expires_at: string | null;
+  is_expired: boolean;
   click_count: number;
+}
+
+export interface User {
+  id: number;
+  email: string;
+  created_at: string;
+}
+
+export interface AuthResponse {
+  token: string;
+  user: User;
 }
 
 export interface ClickPoint {

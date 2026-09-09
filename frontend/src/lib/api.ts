@@ -1,4 +1,5 @@
-import type { DashboardSummary, ShortUrl, UrlAnalytics } from "@/types";
+import type { AuthResponse, DashboardSummary, ShortUrl, UrlAnalytics, User } from "@/types";
+import { getToken } from "@/lib/auth-storage";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -12,10 +13,13 @@ class ApiError extends Error {
 }
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const token = getToken();
+
   const response = await fetch(`${API_URL}${path}`, {
     ...options,
     headers: {
       "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options?.headers,
     },
   });
@@ -46,6 +50,7 @@ export function createShortUrl(payload: {
   url: string;
   custom_code?: string;
   title?: string;
+  expires_at?: string;
 }): Promise<ShortUrl> {
   return request<ShortUrl>("/api/urls", {
     method: "POST",
@@ -63,6 +68,24 @@ export function getUrlAnalytics(shortCode: string, days = 30): Promise<UrlAnalyt
 
 export function getDashboardSummary(): Promise<DashboardSummary> {
   return request<DashboardSummary>("/api/urls/analytics/summary");
+}
+
+export function registerUser(email: string, password: string): Promise<AuthResponse> {
+  return request<AuthResponse>("/api/auth/register", {
+    method: "POST",
+    body: JSON.stringify({ email, password }),
+  });
+}
+
+export function loginUser(email: string, password: string): Promise<AuthResponse> {
+  return request<AuthResponse>("/api/auth/login", {
+    method: "POST",
+    body: JSON.stringify({ email, password }),
+  });
+}
+
+export function getCurrentUser(): Promise<User> {
+  return request<User>("/api/auth/me");
 }
 
 export { ApiError };

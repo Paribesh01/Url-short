@@ -1,21 +1,28 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Search } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
+import { RequireAuth } from "@/components/require-auth";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { CreateUrlForm } from "@/components/dashboard/create-url-form";
 import { UrlTable } from "@/components/dashboard/url-table";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/context/auth-context";
 import { getDashboardSummary, listShortUrls } from "@/lib/api";
 import type { DashboardSummary, ShortUrl } from "@/types";
 import { toast } from "sonner";
 
-export default function DashboardPage() {
+function DashboardContent() {
+  const { user } = useAuth();
   const [urls, setUrls] = useState<ShortUrl[]>([]);
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
+    if (!user) return;
     let cancelled = false;
 
     (async () => {
@@ -39,7 +46,18 @@ export default function DashboardPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [user]);
+
+  const filteredUrls = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    if (!query) return urls;
+    return urls.filter(
+      (url) =>
+        url.short_code.toLowerCase().includes(query) ||
+        url.original_url.toLowerCase().includes(query) ||
+        url.title?.toLowerCase().includes(query)
+    );
+  }, [urls, search]);
 
   function handleCreated(url: ShortUrl) {
     setUrls((prev) => [url, ...prev]);
@@ -92,12 +110,33 @@ export default function DashboardPage() {
             />
             <CreateUrlForm onCreated={handleCreated} />
             <div>
-              <h2 className="mb-3 text-lg font-medium">Your links</h2>
-              <UrlTable urls={urls} onDeleted={handleDeleted} />
+              <div className="mb-3 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+                <h2 className="text-lg font-medium">Your links</h2>
+                {urls.length > 0 && (
+                  <div className="relative w-full sm:w-64">
+                    <Search className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      placeholder="Search links…"
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      className="pl-8"
+                    />
+                  </div>
+                )}
+              </div>
+              <UrlTable urls={filteredUrls} onDeleted={handleDeleted} />
             </div>
           </div>
         )}
       </main>
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <RequireAuth>
+      <DashboardContent />
+    </RequireAuth>
   );
 }
