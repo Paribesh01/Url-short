@@ -8,8 +8,8 @@ npm-debug.log*
 
 # Python
 backend/venv/
-backend/__pycache__/
-backend/*.pyc
+**/__pycache__/
+*.pyc
 backend/.pytest_cache/
 *.egg-info/
 
