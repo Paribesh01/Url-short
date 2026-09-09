@@ -1,9 +1,9 @@
-import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider as NavigationThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
-import { useColorScheme } from 'react-native';
 
 import { AuthProvider, useAuth } from '@/context/auth-context';
+import { ThemePreferenceProvider, useThemePreference } from '@/context/theme-context';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -35,14 +35,28 @@ function RootNavigator() {
   );
 }
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
+function NavigationThemeWrapper({ children }: { children: React.ReactNode }) {
+  // Drives React Navigation's own theme (header/tab bar chrome) off the
+  // same resolved preference (system/light/dark) our components use,
+  // rather than the raw system scheme — so a manual override actually
+  // affects native chrome too, not just our own screens.
+  const { colorScheme } = useThemePreference();
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <NavigationThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      {children}
+    </NavigationThemeProvider>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <ThemePreferenceProvider>
       <AuthProvider>
-        <RootNavigator />
+        <NavigationThemeWrapper>
+          <RootNavigator />
+        </NavigationThemeWrapper>
       </AuthProvider>
-    </ThemeProvider>
+    </ThemePreferenceProvider>
   );
 }

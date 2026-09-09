@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/button';
 import { TextField } from '@/components/ui/text-field';
+import { ThemeToggleButton } from '@/components/theme-toggle-button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useAuth } from '@/context/auth-context';
@@ -34,6 +35,9 @@ export default function RegisterScreen() {
   return (
     <ThemedView style={styles.flex}>
       <SafeAreaView style={styles.flex}>
+        <ThemedView style={styles.toggleRow}>
+          <ThemeToggleButton />
+        </ThemedView>
         <KeyboardAvoidingView
           style={styles.flex}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -89,6 +93,7 @@ export default function RegisterScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
+  toggleRow: { alignItems: 'flex-end', paddingHorizontal: Spacing.four, paddingTop: Spacing.two },
   container: {
     flex: 1,
     justifyContent: 'center',
