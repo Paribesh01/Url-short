@@ -14,6 +14,14 @@ class Config:
         "DATABASE_URL", "postgresql://user:password@localhost:5432/urlshort"
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    # Serverless Postgres providers (e.g. Neon) can close idle connections
+    # server-side; pre_ping detects and transparently replaces dead
+    # connections instead of surfacing an OperationalError, and recycle
+    # keeps the pool from holding a connection past the provider's idle limit.
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_pre_ping": True,
+        "pool_recycle": 300,
+    }
 
     REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
 
