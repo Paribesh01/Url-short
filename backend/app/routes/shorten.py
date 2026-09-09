@@ -3,7 +3,7 @@ from urllib.parse import urlparse
 
 from flask import Blueprint, current_app, g, jsonify, request
 
-from app.extensions import db, redis_client
+from app.extensions import cache_delete, db
 from app.models import ShortUrl
 from app.utils.decorators import login_required, optional_auth
 from app.utils.shortcode import generate_short_code
@@ -121,7 +121,6 @@ def delete_short_url(short_code: str):
     db.session.delete(short_url)
     db.session.commit()
 
-    if redis_client:
-        redis_client.delete(f"shorturl:{short_code}")
+    cache_delete(f"shorturl:{short_code}")
 
     return "", 204

@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 from flask import Blueprint, abort, current_app, redirect, request
 
-from app.extensions import db, redis_client
+from app.extensions import cache_get, cache_set, db
 from app.models import Click, ShortUrl
 from app.utils.geo import lookup_geo
 from app.utils.parse_agent import parse_client
@@ -42,7 +42,7 @@ def _record_click(short_url: ShortUrl) -> None:
 @redirect_bp.get("/<string:short_code>")
 def redirect_to_original(short_code: str):
     cache_key = f"shorturl:{short_code}"
-    original_url = redis_client.get(cache_key) if redis_client else None
+    original_url = cache_get(cache_key)
 
     short_url = None
     if not original_url:
@@ -54,10 +54,7 @@ def redirect_to_original(short_code: str):
             abort(410, description="This short URL has expired.")
 
         original_url = short_url.original_url
-        if redis_client:
-            redis_client.setex(
-                cache_key, current_app.config["REDIRECT_CACHE_TTL"], original_url
-            )
+        cache_set(cache_key, original_url, current_app.config["REDIRECT_CACHE_TTL"])
 
     # Tracking always hits the DB (need the row's id), so fetch it if the
     # redirect target itself came from cache.
