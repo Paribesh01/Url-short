@@ -55,6 +55,8 @@ export default function LoginScreen() {
               <TextField
                 label="Password"
                 secureTextEntry
+                autoCapitalize="none"
+                autoCorrect={false}
                 autoComplete="password"
                 value={password}
                 onChangeText={setPassword}

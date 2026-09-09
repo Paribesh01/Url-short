@@ -58,6 +58,8 @@ export default function RegisterScreen() {
               <TextField
                 label="Password"
                 secureTextEntry
+                autoCapitalize="none"
+                autoCorrect={false}
                 autoComplete="new-password"
                 value={password}
                 onChangeText={setPassword}
