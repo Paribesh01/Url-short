@@ -13,16 +13,21 @@ def create_app(config_class: type = Config) -> Flask:
     init_redis(app.config["REDIS_URL"])
     CORS(app, resources={r"/api/*": {"origins": app.config["CORS_ORIGINS"]}})
 
+    from app.routes.auth import auth_bp
     from app.routes.shorten import shorten_bp
     from app.routes.redirect import redirect_bp
     from app.routes.analytics import analytics_bp
 
+    app.register_blueprint(auth_bp)
     app.register_blueprint(shorten_bp)
     app.register_blueprint(analytics_bp)
     app.register_blueprint(redirect_bp)
 
     with app.app_context():
         db.create_all()
+        from app.schema import sync_schema
+
+        sync_schema()
 
     @app.get("/api/health")
     def health_check():

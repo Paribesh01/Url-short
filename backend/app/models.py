@@ -1,10 +1,32 @@
 from datetime import datetime, timezone
 
+from werkzeug.security import check_password_hash, generate_password_hash
+
 from app.extensions import db
 
 
 def utcnow() -> datetime:
     return datetime.now(timezone.utc)
+
+
+class User(db.Model):
+    __tablename__ = "users"
+
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(255), unique=True, nullable=False, index=True)
+    password_hash = db.Column(db.String(255), nullable=False)
+    created_at = db.Column(db.DateTime(timezone=True), default=utcnow, nullable=False)
+
+    urls = db.relationship("ShortUrl", backref="owner", lazy="dynamic")
+
+    def set_password(self, password: str) -> None:
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password: str) -> bool:
+        return check_password_hash(self.password_hash, password)
+
+    def to_dict(self) -> dict:
+        return {"id": self.id, "email": self.email, "created_at": self.created_at.isoformat()}
 
 
 class ShortUrl(db.Model):
@@ -14,6 +36,7 @@ class ShortUrl(db.Model):
     short_code = db.Column(db.String(16), unique=True, nullable=False, index=True)
     original_url = db.Column(db.Text, nullable=False)
     title = db.Column(db.String(255), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True, index=True)
 
     created_at = db.Column(db.DateTime(timezone=True), default=utcnow, nullable=False)
     expires_at = db.Column(db.DateTime(timezone=True), nullable=True)
@@ -25,6 +48,9 @@ class ShortUrl(db.Model):
     def click_count(self) -> int:
         return self.clicks.count()
 
+    def is_expired(self) -> bool:
+        return bool(self.expires_at and self.expires_at < utcnow())
+
     def to_dict(self, base_url: str) -> dict:
         return {
             "id": self.id,
@@ -34,6 +60,7 @@ class ShortUrl(db.Model):
             "title": self.title,
             "created_at": self.created_at.isoformat(),
             "expires_at": self.expires_at.isoformat() if self.expires_at else None,
+            "is_expired": self.is_expired(),
             "click_count": self.click_count(),
         }
 

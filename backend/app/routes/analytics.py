@@ -1,20 +1,18 @@
 from datetime import timedelta
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, g, jsonify, request
 from sqlalchemy import func
 
 from app.extensions import db
 from app.models import Click, ShortUrl
 from app.models import utcnow
+from app.utils.decorators import login_required
 
 analytics_bp = Blueprint("analytics", __name__, url_prefix="/api/urls")
 
 
-def _get_short_url_or_404(short_code: str) -> ShortUrl:
-    short_url = ShortUrl.query.filter_by(short_code=short_code).first()
-    if not short_url:
-        return None
-    return short_url
+def _get_owned_short_url(short_code: str) -> ShortUrl | None:
+    return ShortUrl.query.filter_by(short_code=short_code, user_id=g.current_user.id).first()
 
 
 def _top_counts(short_url_id: int, column, limit: int = 5) -> list[dict]:
@@ -44,8 +42,9 @@ def _clicks_over_time(short_url_id: int, days: int) -> list[dict]:
 
 
 @analytics_bp.get("/<string:short_code>/analytics")
+@login_required
 def get_analytics(short_code: str):
-    short_url = _get_short_url_or_404(short_code)
+    short_url = _get_owned_short_url(short_code)
     if not short_url:
         return jsonify({"error": "Short URL not found."}), 404
 
@@ -72,19 +71,28 @@ def get_analytics(short_code: str):
 
 
 @analytics_bp.get("/analytics/summary")
+@login_required
 def get_summary():
-    """Aggregate stats across all short URLs, for the dashboard overview."""
-    total_urls = ShortUrl.query.count()
-    total_clicks = Click.query.count()
+    """Aggregate stats across the current user's short URLs, for the dashboard overview."""
+    owned_urls = ShortUrl.query.filter_by(user_id=g.current_user.id)
+    total_urls = owned_urls.count()
+    owned_url_ids = [url.id for url in owned_urls.with_entities(ShortUrl.id)]
+    total_clicks = (
+        Click.query.filter(Click.short_url_id.in_(owned_url_ids)).count()
+        if owned_url_ids
+        else 0
+    )
 
     since = utcnow() - timedelta(days=30)
     day_bucket = func.date_trunc("day", Click.clicked_at)
     rows = (
         db.session.query(day_bucket.label("day"), func.count(Click.id).label("count"))
-        .filter(Click.clicked_at >= since)
+        .filter(Click.short_url_id.in_(owned_url_ids), Click.clicked_at >= since)
         .group_by(day_bucket)
         .order_by(day_bucket)
         .all()
+        if owned_url_ids
+        else []
     )
 
     return jsonify(
