@@ -1,0 +1,46 @@
+# Local infrastructure for development.
+#
+# Postgres is optional: this project defaults to a managed Postgres
+# instance (e.g. Neon) via DATABASE_URL in backend/.env. Use the
+# `postgres` service here if you'd rather run a fully local database —
+# point DATABASE_URL at postgresql://urlshort:urlshort@localhost:5432/urlshort.
+#
+# Redis is required for the redirect caching layer and has no managed
+# equivalent configured elsewhere in this project, so it always runs
+# locally via this file.
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: urlshort-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: urlshort-postgres
+    environment:
+      POSTGRES_USER: urlshort
+      POSTGRES_PASSWORD: urlshort
+      POSTGRES_DB: urlshort
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U urlshort"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    profiles:
+      - local-db
+
+volumes:
+  redis_data:
+  postgres_data:
