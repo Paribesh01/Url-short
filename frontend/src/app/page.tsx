@@ -5,6 +5,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { HeroShortener } from "@/components/landing/hero-shortener";
 import { FeatureGrid } from "@/components/landing/feature-grid";
 import { HowItWorks } from "@/components/landing/how-it-works";
+import { DownloadApp } from "@/components/landing/download-app";
 
 export default function Home() {
   return (
@@ -47,6 +48,7 @@ export default function Home() {
 
         <FeatureGrid />
         <HowItWorks />
+        <DownloadApp />
 
         <section className="mx-auto max-w-6xl px-6 py-24">
           <div className="flex flex-col items-center justify-between gap-8 rounded-3xl border border-border bg-card px-8 py-14 text-center sm:px-16">
