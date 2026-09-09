@@ -21,7 +21,9 @@ urlShort/
 ## How it works
 
 - `POST /api/urls` creates a short code for a destination URL (or accepts
-  a custom code).
+  a custom code and an optional expiration date). Works whether or not
+  you're signed in — an anonymous link just isn't tied to any account,
+  so it won't show up in anyone's dashboard.
 - `GET /<code>` resolves the short code and 302-redirects to the
   destination. The lookup is cached in Redis so repeat traffic to a
   link skips the database. Every hit is logged as a `Click` row:
@@ -30,6 +32,22 @@ urlShort/
 - `GET /api/urls/<code>/analytics` aggregates those `Click` rows into
   clicks-over-time, top referrers, top countries, top browsers, and
   top devices for the dashboard.
+- Accounts are JWT-based (`POST /api/auth/register`, `/login`, `GET
+  /me`): the frontend sends `Authorization: Bearer <token>` on every
+  request that needs to know who's calling. Listing, deleting, and
+  viewing analytics for links all require auth and are scoped to the
+  caller's own links.
+
+## Features
+
+- Shorten a URL with an optional custom code, title, and expiration date
+- Per-link analytics: clicks over time, top referrers/countries/
+  browsers/devices, recent click activity
+- Redis-cached redirects
+- Accounts (JWT auth) — your dashboard only ever shows your own links
+- QR code for any short link, from the table or the analytics page
+- Dark mode
+- Search/filter your links on the dashboard
 
 ## Prerequisites
 
@@ -92,8 +110,10 @@ npm run dev
 
 The app starts on `http://localhost:3000`.
 
-- `/` — landing page with a live shortener widget
+- `/` — landing page with a live shortener widget (no account needed)
+- `/register`, `/login` — create an account or sign in
 - `/dashboard` — create links, view the list, see summary stats
+  (requires signing in)
 - `/dashboard/<code>` — per-link analytics: clicks over time, top
   referrers/countries/browsers/devices, recent click activity
 
@@ -106,7 +126,7 @@ The app starts on `http://localhost:3000`.
 | `DATABASE_URL` | Postgres connection string |
 | `REDIS_URL` | Redis connection string |
 | `BASE_URL` | Used to compose the full short link returned by the API |
-| `SECRET_KEY` | Flask secret key |
+| `SECRET_KEY` | Flask secret key; also signs auth JWTs |
 | `CORS_ORIGINS` | Comma-separated origins allowed to call the API |
 
 **`frontend/.env.local`** (see `frontend/.env.example`)
