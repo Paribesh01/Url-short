@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from urllib.parse import urlparse
 
 from flask import Blueprint, current_app, g, jsonify, request
@@ -22,12 +22,23 @@ def _is_valid_url(value: str) -> bool:
 
 
 def _parse_expires_at(value: str | None) -> datetime | None:
+    """Parse an ISO date/datetime string into a tz-aware UTC datetime.
+
+    Accepts both a bare date (from the frontend's <input type="date">,
+    e.g. "2026-09-15") and a full ISO timestamp. A naive result is
+    assumed to be UTC, since it's later compared against a tz-aware
+    utcnow() in ShortUrl.is_expired().
+    """
     if not value:
         return None
     try:
-        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
     except ValueError:
         return None
+
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed
 
 
 def _generate_unique_code() -> str:

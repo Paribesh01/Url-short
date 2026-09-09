@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Copy, ExternalLink, MoreHorizontal, Trash2 } from "lucide-react";
+import { Copy, ExternalLink, MoreHorizontal, QrCode, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -19,6 +19,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { QrCodeContent } from "@/components/dashboard/qr-code-content";
 import { deleteShortUrl, ApiError } from "@/lib/api";
 import { formatExactNumber, timeAgo, truncateUrl } from "@/lib/format";
 import type { ShortUrl } from "@/types";
@@ -31,6 +33,7 @@ interface UrlTableProps {
 
 export function UrlTable({ urls, onDeleted }: UrlTableProps) {
   const [deletingCode, setDeletingCode] = useState<string | null>(null);
+  const [qrUrl, setQrUrl] = useState<string | null>(null);
 
   async function handleCopy(shortUrl: string) {
     await navigator.clipboard.writeText(shortUrl);
@@ -74,13 +77,20 @@ export function UrlTable({ urls, onDeleted }: UrlTableProps) {
           {urls.map((url) => (
             <TableRow key={url.id}>
               <TableCell>
-                <div className="flex flex-col">
-                  <Link
-                    href={`/dashboard/${url.short_code}`}
-                    className="font-mono text-sm font-medium text-brand hover:underline"
-                  >
-                    /{url.short_code}
-                  </Link>
+                <div className="flex flex-col gap-0.5">
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href={`/dashboard/${url.short_code}`}
+                      className="font-mono text-sm font-medium text-brand hover:underline"
+                    >
+                      /{url.short_code}
+                    </Link>
+                    {url.is_expired && (
+                      <Badge variant="outline" className="text-muted-foreground">
+                        Expired
+                      </Badge>
+                    )}
+                  </div>
                   {url.title && (
                     <span className="text-xs text-muted-foreground">{url.title}</span>
                   )}
@@ -115,6 +125,10 @@ export function UrlTable({ urls, onDeleted }: UrlTableProps) {
                       <Copy className="size-4" />
                       Copy link
                     </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setQrUrl(url.short_url)}>
+                      <QrCode className="size-4" />
+                      QR code
+                    </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link href={`/dashboard/${url.short_code}`}>
                         <ExternalLink className="size-4" />
@@ -136,6 +150,10 @@ export function UrlTable({ urls, onDeleted }: UrlTableProps) {
           ))}
         </TableBody>
       </Table>
+
+      <Dialog open={qrUrl !== null} onOpenChange={(open) => !open && setQrUrl(null)}>
+        <DialogContent className="sm:max-w-xs">{qrUrl && <QrCodeContent url={qrUrl} />}</DialogContent>
+      </Dialog>
     </div>
   );
 }

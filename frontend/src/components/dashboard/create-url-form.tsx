@@ -18,6 +18,7 @@ export function CreateUrlForm({ onCreated }: CreateUrlFormProps) {
   const [url, setUrl] = useState("");
   const [customCode, setCustomCode] = useState("");
   const [title, setTitle] = useState("");
+  const [expiresAt, setExpiresAt] = useState("");
   const [loading, setLoading] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
@@ -31,12 +32,14 @@ export function CreateUrlForm({ onCreated }: CreateUrlFormProps) {
         url: url.trim(),
         custom_code: customCode.trim() || undefined,
         title: title.trim() || undefined,
+        expires_at: expiresAt || undefined,
       });
       onCreated(shortUrl);
       toast.success("Short link created", { description: shortUrl.short_url });
       setUrl("");
       setCustomCode("");
       setTitle("");
+      setExpiresAt("");
       setShowAdvanced(false);
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "Failed to create short link.");
@@ -82,7 +85,7 @@ export function CreateUrlForm({ onCreated }: CreateUrlFormProps) {
           </button>
 
           {showAdvanced && (
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-3 sm:grid-cols-3">
               <div className="space-y-1.5">
                 <Label htmlFor="custom-code">Custom code</Label>
                 <Input
@@ -99,6 +102,15 @@ export function CreateUrlForm({ onCreated }: CreateUrlFormProps) {
                   placeholder="Launch announcement"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="expires-at">Expires (optional)</Label>
+                <Input
+                  id="expires-at"
+                  type="date"
+                  value={expiresAt}
+                  onChange={(e) => setExpiresAt(e.target.value)}
                 />
               </div>
             </div>
