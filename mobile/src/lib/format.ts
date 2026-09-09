@@ -1,27 +1,43 @@
+// This file deliberately avoids relying on Intl.* APIs beyond the most
+// basic ones. Hermes' Intl support varies by platform and Expo Go build —
+// Intl.RelativeTimeFormat threw "undefined cannot be used as a
+// constructor" on a real device while working fine in the web preview,
+// even though Intl.NumberFormat worked in both. Rather than gamble on
+// which Intl formatters a given device happens to ship, the date/relative-
+// time helpers here are hand-rolled, and the one Intl call we do keep has
+// a manual fallback.
+
+const MONTHS = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+];
+
 export function formatExactNumber(value: number): string {
-  return new Intl.NumberFormat('en-US').format(value);
+  try {
+    return new Intl.NumberFormat('en-US').format(value);
+  } catch {
+    // Manual thousands separator, in case Intl.NumberFormat itself is
+    // ever unavailable on some device/build.
+    return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
 }
 
 export function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
+  const date = new Date(iso);
+  return `${MONTHS[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
 }
 
 export function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  });
+  const date = new Date(iso);
+  let hours = date.getHours();
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const meridiem = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12 || 12;
+  return `${MONTHS[date.getMonth()]} ${date.getDate()}, ${hours}:${minutes} ${meridiem}`;
 }
 
 export function timeAgo(iso: string): string {
   const seconds = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
-  const units: [Intl.RelativeTimeFormatUnit, number][] = [
+  const units: [string, number][] = [
     ['year', 31536000],
     ['month', 2592000],
     ['day', 86400],
@@ -32,8 +48,7 @@ export function timeAgo(iso: string): string {
   for (const [unit, secondsInUnit] of units) {
     const value = Math.floor(seconds / secondsInUnit);
     if (value >= 1) {
-      const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
-      return rtf.format(-value, unit);
+      return `${value} ${unit}${value === 1 ? '' : 's'} ago`;
     }
   }
   return 'just now';
