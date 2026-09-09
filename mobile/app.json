@@ -8,9 +8,12 @@
     "scheme": "snip",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "com.snip.app",
+      "supportsTablet": true
     },
     "android": {
+      "package": "com.snip.app",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

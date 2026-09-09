@@ -45,6 +45,62 @@ Also add whichever origin you're testing from to `CORS_ORIGINS` in
 - `src/app/_layout.tsx` — routes to `login`/`register` or the `(app)` group
   using `Stack.Protected`, based on auth state
 
-Light/dark mode follows the system appearance automatically (no in-app
-toggle) via the existing `ThemedView`/`ThemedText`/`useColorScheme` setup
-from the Expo template.
+Light/dark/system theme is a manual toggle (header, and on login/register),
+persisted via `expo-secure-store`/`localStorage` — see
+`src/context/theme-context.tsx`.
+
+## Deploying
+
+Distributing a React Native app means producing an actual native binary,
+which Expo handles via [EAS Build](https://docs.expo.dev/build/introduction/).
+There's no "just push to deploy" here the way there is for the web app —
+every path below produces a build you then have to install or submit
+somewhere.
+
+```bash
+npm install -g eas-cli
+eas login
+eas build:configure   # links this project to your Expo account, if not done already
+```
+
+### Test on your own device(s) — free, no store account needed
+
+```bash
+eas build --profile preview --platform ios      # or android, or --platform all
+```
+
+This produces an installable build (an `.ipa`/`.apk`, or a QR-code install
+link) without going through App Store/Play Store review. For iOS you'll
+need to register test devices' UDIDs with `eas device:create` first
+(`eas build` will prompt you); Android has no such restriction.
+
+### Publish to the App Store / Play Store
+
+This needs paid developer accounts you create yourself — I can set up the
+repo-side config, but the account, payment, and store-listing steps happen
+in your own Apple/Google accounts, not something to run from a terminal:
+
+- **Apple Developer Program**: $99/year, at developer.apple.com
+- **Google Play Console**: $25 one-time, at play.google.com/console
+
+Once you have those:
+
+```bash
+eas build --profile production --platform ios
+eas build --profile production --platform android
+eas submit --platform ios       # uploads to App Store Connect / TestFlight
+eas submit --platform android   # uploads to the Play Console
+```
+
+`eas submit` will ask for App Store Connect / Play Console credentials (or
+an API key) the first time — that's the point where you're authenticating
+as yourself, not something I can do on your behalf. After submitting,
+Apple's review typically takes 1–3 days; Google's is usually faster.
+Update `IOS_APP_URL`/`ANDROID_APP_URL` in the web app's
+`frontend/src/lib/app-links.ts` once each listing is live, so the
+"download the app" buttons on the landing page actually go somewhere.
+
+`app.json` already has placeholder bundle identifiers
+(`com.snip.app` for both `ios.bundleIdentifier` and `android.package`) —
+change these to something you actually own before submitting, since once
+published an app's identifier can't be changed.
