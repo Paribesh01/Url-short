@@ -25,3 +25,5 @@ backend/.pytest_cache/
 .vscode/
 .idea/
 backend/instance/
+backend/dump.rdb
+*.rdb
