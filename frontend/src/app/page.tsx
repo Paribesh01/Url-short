@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { BarChart3, Sparkles } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
@@ -56,12 +57,12 @@ export default function Home() {
               Jump into the dashboard to create links, set custom codes, and explore
               analytics for everything you&apos;ve shortened.
             </p>
-            <a
+            <Link
               href="/dashboard"
               className="inline-flex h-11 items-center rounded-lg bg-brand px-6 text-sm font-medium text-brand-foreground transition-opacity hover:opacity-90"
             >
               Open the Dashboard
-            </a>
+            </Link>
           </div>
         </section>
       </main>

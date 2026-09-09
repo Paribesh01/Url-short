@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { ArrowRight, Check, Copy, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -77,9 +78,9 @@ export function HeroShortener() {
 
       <p className="mt-3 text-xs text-muted-foreground">
         No signup needed. Want custom codes and analytics dashboards?{" "}
-        <a href="/dashboard" className="font-medium text-foreground underline underline-offset-2">
+        <Link href="/dashboard" className="font-medium text-foreground underline underline-offset-2">
           Open the dashboard
-        </a>
+        </Link>
         .
       </p>
     </div>
