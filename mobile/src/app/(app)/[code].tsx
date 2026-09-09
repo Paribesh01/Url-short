@@ -14,7 +14,7 @@ import { ThemedView } from '@/components/themed-view';
 import { useTheme } from '@/hooks/use-theme';
 import { Spacing } from '@/constants/theme';
 import { API_URL, getUrlAnalytics, ApiError } from '@/lib/api';
-import { formatDateTime, formatExactNumber, referrerLabel } from '@/lib/format';
+import { formatDateTime, formatExactNumber, locationLabel, referrerLabel } from '@/lib/format';
 import type { UrlAnalytics } from '@/types';
 
 export default function LinkAnalyticsScreen() {
@@ -148,6 +148,9 @@ export default function LinkAnalyticsScreen() {
                       {formatDateTime(click.clicked_at)}
                     </ThemedText>
                     <ThemedText type="small">{referrerLabel(click.referrer)}</ThemedText>
+                    <ThemedText type="small" themeColor="textSecondary">
+                      {locationLabel(click)}
+                    </ThemedText>
                     <ThemedText type="small" themeColor="textSecondary">
                       {click.browser} · {click.device_type}
                     </ThemedText>

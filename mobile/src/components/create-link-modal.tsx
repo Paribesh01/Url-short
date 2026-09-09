@@ -4,6 +4,7 @@ import { Feather } from '@expo/vector-icons';
 
 import { Button } from '@/components/ui/button';
 import { TextField } from '@/components/ui/text-field';
+import { ExpiryDateField } from '@/components/ui/expiry-date-field';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTheme } from '@/hooks/use-theme';
@@ -22,12 +23,14 @@ export function CreateLinkModal({ visible, onClose, onCreated }: CreateLinkModal
   const [url, setUrl] = useState('');
   const [customCode, setCustomCode] = useState('');
   const [title, setTitle] = useState('');
+  const [expiresAt, setExpiresAt] = useState<Date | null>(null);
   const [loading, setLoading] = useState(false);
 
   function reset() {
     setUrl('');
     setCustomCode('');
     setTitle('');
+    setExpiresAt(null);
   }
 
   async function handleCreate() {
@@ -38,6 +41,7 @@ export function CreateLinkModal({ visible, onClose, onCreated }: CreateLinkModal
         url: url.trim(),
         custom_code: customCode.trim() || undefined,
         title: title.trim() || undefined,
+        expires_at: expiresAt ? expiresAt.toISOString() : undefined,
       });
       onCreated(shortUrl);
       reset();
@@ -86,6 +90,7 @@ export function CreateLinkModal({ visible, onClose, onCreated }: CreateLinkModal
             value={title}
             onChangeText={setTitle}
           />
+          <ExpiryDateField label="Expires (optional)" value={expiresAt} onChange={setExpiresAt} />
           <Button label="Create" onPress={handleCreate} loading={loading} fullWidth />
         </View>
       </ThemedView>

@@ -67,3 +67,9 @@ export function referrerLabel(referrer: string | null): string {
     return referrer;
   }
 }
+
+export function locationLabel(click: { city: string | null; country: string | null }): string {
+  const hasRealCity = click.city && click.city !== 'Unknown' && click.city !== 'Local';
+  if (hasRealCity) return `${click.city}, ${click.country}`;
+  return click.country || 'Unknown';
+}

@@ -136,6 +136,18 @@ export default function DashboardScreen() {
                     {formatExactNumber(summary?.total_clicks ?? 0)}
                   </ThemedText>
                 </Card>
+                <Card style={styles.statCard}>
+                  <ThemedText type="small" themeColor="textSecondary">
+                    Avg/link
+                  </ThemedText>
+                  <ThemedText type="subtitle" style={styles.statValue}>
+                    {formatExactNumber(
+                      summary && summary.total_urls > 0
+                        ? Math.round((summary.total_clicks / summary.total_urls) * 10) / 10
+                        : 0
+                    )}
+                  </ThemedText>
+                </Card>
               </View>
 
               {urls.length > 0 && (
@@ -185,8 +197,8 @@ const styles = StyleSheet.create({
   listContent: { padding: Spacing.three, paddingBottom: Spacing.six, gap: Spacing.two },
   header: { gap: Spacing.three, marginBottom: Spacing.three },
   statsRow: { flexDirection: 'row', gap: Spacing.two },
-  statCard: { flex: 1 },
-  statValue: { fontSize: 26, lineHeight: 32 },
+  statCard: { flex: 1, padding: Spacing.two, gap: Spacing.half },
+  statValue: { fontSize: 22, lineHeight: 27 },
   empty: {
     borderRadius: Spacing.three,
     padding: Spacing.five,
