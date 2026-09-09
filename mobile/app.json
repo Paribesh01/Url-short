@@ -49,6 +49,12 @@
         "projectId": "277053c2-855b-4c33-abe3-3d53c8244315"
       }
     },
-    "owner": "paribeshn"
+    "owner": "paribeshn",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/277053c2-855b-4c33-abe3-3d53c8244315"
+    }
   }
 }
