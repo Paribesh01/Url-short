@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BarChart3, Sparkles } from "lucide-react";
+import { BarChart3, Smartphone, Sparkles } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { HeroShortener } from "@/components/landing/hero-shortener";
@@ -20,10 +20,19 @@ export default function Home() {
           />
 
           <div className="mx-auto flex max-w-6xl flex-col items-center px-6 pt-20 pb-24 text-center sm:pt-28">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
-              <Sparkles className="size-3.5 text-brand" />
-              Now with referrer &amp; geo analytics
-            </span>
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
+                <Sparkles className="size-3.5 text-brand" />
+                Now with referrer &amp; geo analytics
+              </span>
+              <a
+                href="#mobile-app"
+                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <Smartphone className="size-3.5 text-brand" />
+                Also available on Android
+              </a>
+            </div>
 
             <h1 className="mt-6 max-w-3xl text-4xl font-semibold tracking-tight sm:text-6xl">
               Short links that tell you the{" "}
